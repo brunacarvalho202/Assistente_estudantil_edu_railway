@@ -22,7 +22,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("💬 Chat LLM Edu Assistant")
+st.title("💬 Seu chatbot Edu Assistant")
 
 # Informação sobre o ambiente
 col1, col2 = st.columns(2)
