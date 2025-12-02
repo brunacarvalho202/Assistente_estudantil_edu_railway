@@ -5,11 +5,13 @@ on:
     branches:
       - dev
 
+
 # Permissões no nível do workflow (AGORA INCLUI 'workflows: write')
 permissions:
   contents: write
   actions: read
-  workflows: write # <--- MOVIDO PARA O NÍVEL SUPERIOR (GLOBAL)
+  workflows: write
+
 
 jobs:
   test_and_sync:
