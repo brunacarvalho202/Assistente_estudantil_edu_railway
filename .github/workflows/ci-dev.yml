@@ -6,9 +6,8 @@ on:
       - dev
 
 permissions:
-    contents: write
-    actions: read
-    workflows: write
+  contents: write
+  actions: write
 
 jobs:
   test_and_sync:
