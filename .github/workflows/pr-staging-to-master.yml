@@ -1,4 +1,4 @@
-name: 2. PR Automática - staging → master
+name: 2. PR Automática - staging → main
 
 on:
   workflow_dispatch:
@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Criar PR staging → master
+      - name: Criar PR staging → main
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PR_CREATOR_TOKEN }}
           script: |
             const head = "staging";
             const base = "main";
-            const prTitle = "Merge automático: staging → master";
+            const prTitle = "Merge automático: staging → main";
             const prBody = context.payload.inputs?.message || "PR criada automaticamente após atualização em staging. Por favor, revise e aprove para ir à produção.";
 
             // 1. Verifica se PR já existe
@@ -50,7 +50,7 @@ jobs:
               console.log(`PR criada com sucesso: #${pr.data.number}`);
             } catch (e) {
               if (e.status === 422) {
-                console.log("ℹNenhuma mudança entre staging e master. PR não criada.");
+                console.log("ℹNenhuma mudança entre staging e main. PR não criada.");
               } else {
                 throw e;
               }
