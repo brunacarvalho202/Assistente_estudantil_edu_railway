@@ -5,21 +5,14 @@ on:
     branches:
       - dev
 
-
-# Permissões no nível do workflow (AGORA INCLUI 'workflows: write')
 permissions:
   contents: write
   actions: read
   workflows: write
 
-
 jobs:
   test_and_sync:
-    runs-on: ubuntu-latest
-    
-    # REMOVIDO O BLOCO 'permissions' DAQUI.
-    # Ele causava o erro "Unexpected value 'workflows'" na linha 12.
-    # O job agora herda as permissões do bloco global acima.
+    runs-on: ubuntu-latest   
 
     steps:
       - name: Checkout Código

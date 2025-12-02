@@ -22,7 +22,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("💬 Seu chatbot Edu Assistant")
+st.title("💬 Sou seu chatbot Edu Assistant")
 
 # Informação sobre o ambiente
 col1, col2 = st.columns(2)
@@ -34,7 +34,7 @@ with col2:
 # Input do usuário
 st.markdown("---")
 user_input = st.text_area(
-    "Digite sua mensagem:",
+    "Digite sua mensagem aqui:",
     height=100,
     placeholder="Escreva aqui e clique em 'Enviar'..."
 )
