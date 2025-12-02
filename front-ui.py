@@ -34,7 +34,7 @@ with col2:
 # Input do usuário
 st.markdown("---")
 user_input = st.text_area(
-    "Digite sua mensagem aqui:",
+    "Digite sua mensagem:",
     height=100,
     placeholder="Escreva aqui e clique em 'Enviar'..."
 )
