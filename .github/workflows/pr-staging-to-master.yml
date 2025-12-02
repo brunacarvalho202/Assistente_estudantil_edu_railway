@@ -19,7 +19,7 @@ jobs:
           github-token: ${{ secrets.PR_CREATOR_TOKEN }}
           script: |
             const head = "staging";
-            const base = "master";
+            const base = "main";
             const prTitle = "Merge automático: staging → master";
             const prBody = context.payload.inputs?.message || "PR criada automaticamente após atualização em staging. Por favor, revise e aprove para ir à produção.";
 
