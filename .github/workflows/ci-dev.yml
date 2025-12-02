@@ -5,7 +5,7 @@ on:
     branches:
       - dev
 
-# Permissões no nível do workflow (Deixamos apenas o necessário para leitura/push geral)
+# Permissões no nível do workflow (opcional, o bloco do job irá prevalecer)
 permissions:
   contents: write
   actions: read
@@ -14,10 +14,10 @@ jobs:
   test_and_sync:
     runs-on: ubuntu-latest
     
-    # PERMISSÕES CORRIGIDAS NO NÍVEL DO JOB
+    # PERMISSÕES CORRIGIDAS AQUI (dois espaços de indentação)
     permissions:
-      contents: write  # Permite que o merge e o push de código ocorram
-      workflows: write # <--- CORRIGIDO: nome correto no plural. É essencial para o push de arquivos .yml.
+      contents: write  # Permite push de código (necessário para o merge)
+      workflows: write # Necessário para o push quando arquivos .yml são alterados
 
     steps:
       - name: Checkout Código
