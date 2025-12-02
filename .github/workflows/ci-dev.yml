@@ -5,14 +5,13 @@ on:
     branches:
       - dev
 
-# Permissões no nível do workflow (removido workflows: write)
 permissions:
   contents: write
   actions: write
 
 jobs:
   test_and_sync:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   
 
     steps:
       - name: Checkout Código
