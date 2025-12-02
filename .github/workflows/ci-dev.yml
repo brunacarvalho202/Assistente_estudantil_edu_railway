@@ -5,31 +5,70 @@ on:
     branches:
       - dev
 
-# --- BLOCO DE PERMISSÕES CORRIGIDO (NÍVEL DO WORKFLOW) ---
+# Permissões no nível do workflow (AGORA INCLUI 'workflows: write')
 permissions:
   contents: write
   actions: read
-  workflows: write # MOVIDO PARA CÁ
+  workflows: write # <--- MOVIDO PARA O NÍVEL SUPERIOR (GLOBAL)
 
 jobs:
   test_and_sync:
     runs-on: ubuntu-latest
     
-    # --- BLOCO DE PERMISSÕES NO NÍVEL DO JOB (APENAS PERMISSÕES VÁLIDAS AQUI) ---
-    permissions:
-      contents: write
-      # Removido 'workflows: write' daqui, pois já está no nível superior.
+    # REMOVIDO O BLOCO 'permissions' DAQUI.
+    # Ele causava o erro "Unexpected value 'workflows'" na linha 12.
+    # O job agora herda as permissões do bloco global acima.
 
     steps:
-      # ... (restante dos seus steps) ...
       - name: Checkout Código
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      # ... (seus outros steps de teste e sync) ...
 
-      # O step "Disparar Workflow 2" agora usará a permissão 'workflows: write' herdada do topo
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar Dependências
+        run: pip install -r requirements.txt
+
+      - name: Rodar Testes Unitários
+        env:
+          RUN_INTEGRATION_TESTS: ''
+        run: pytest
+
+      # ----------------------------------------------------
+      # 1. SYNCHRONIZE dev → staging
+      # ----------------------------------------------------
+      - name: Sync dev → staging
+        id: sync
+        if: success()
+        env:
+          PAT: ${{ secrets.PR_CREATOR_TOKEN }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git fetch origin --prune
+
+          if git merge-base --is-ancestor origin/dev staging; then
+              echo "A branch staging já inclui todas as alterações de dev. Pulando merge e dispatch."
+              echo "dispatch_required=false" >> $GITHUB_OUTPUT
+              exit 0
+          fi
+
+          git checkout staging
+          git merge origin/dev --no-ff -m "Merge automático dev → staging"
+
+          git remote set-url origin https://x-access-token:${PAT}@github.com/${{ github.repository }}
+          git push origin staging
+
+          echo "dispatch_required=true" >> $GITHUB_OUTPUT
+
+      # ----------------------------------------------------
+      # 2. DISPARAR WORKFLOW 2 (PR staging → master)
+      # ----------------------------------------------------
       - name: Disparar Workflow 2
         if: steps.sync.outputs.dispatch_required == 'true'
         uses: actions/github-script@v7
@@ -37,6 +76,7 @@ jobs:
           github-token: ${{ secrets.PR_CREATOR_TOKEN }}
           script: |
             console.log("Disparando o Workflow 2...");
+
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -46,4 +86,5 @@ jobs:
                 message: 'PR acionada automaticamente após merge dev -> staging.'
               }
             });
+
             console.log("Workflow 2 disparado com sucesso!");
