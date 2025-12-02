@@ -1,10 +1,10 @@
 name: 3. CD - Deploy para Railway via Docker Hub
 
-# Este workflow é acionado somente quando o código é mesclado (merge) na branch 'master'
+# Este workflow é acionado somente quando o código é mesclado (merge) na branch 'main'
 on:
   push:
     branches:
-      - master
+      - main
 
 # Define as variáveis do ambiente
 env:
