@@ -1,12 +1,10 @@
 name: 3. CD - Deploy para Railway via Docker Hub
 
-# Este workflow é acionado somente quando o código é mesclado (merge) na branch 'main'
 on:
   push:
     branches:
       - main
 
-# Define as variáveis do ambiente
 env:
   DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_USERNAME }}/edu-assistant-ai
   RAILWAY_SERVICE_NAME: edu-assistant-api
@@ -14,7 +12,7 @@ env:
 jobs:
   build_push_and_deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Código
         uses: actions/checkout@v4
@@ -56,7 +54,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
-
+      
       - name: Build e Push para Docker Hub
         uses: docker/build-push-action@v5
         with:
@@ -68,26 +66,18 @@ jobs:
           cache-to: type=gha,mode=max
 
       # -----------------------------------------------
-      # 2. Deploy no Railway
+      # 2. Deploy no Railway usando a CLI via container
+      # (ADICIONADO sem alterar o resto)
       # -----------------------------------------------
       - name: Deploy no Railway
+        uses: docker://ghcr.io/railwayapp/cli:latest
+        with:
+          entrypoint: bash
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          # Instalar Railway CLI
-          npm install -g @railway/cli
-
-          # Fazer login no Railway
-          railway login --token $RAILWAY_TOKEN
-
-          # Deploy do projeto
-          railway up \
-            --service ${{ env.RAILWAY_SERVICE_NAME }} \
-            --detach
-
-      - name: Notificar Deploy Concluído
-        if: success()
-        run: |
-          echo "✅ Deploy concluído com sucesso!"
-          echo "Imagem Docker: ${{ env.DOCKERHUB_REPOSITORY }}:latest"
-          echo "Serviço Railway: ${{ env.RAILWAY_SERVICE_NAME }}"
+          RAILWAY_SERVICE_NAME: ${{ env.RAILWAY_SERVICE_NAME }}
+        args: >
+          -c "
+          railway login --token $RAILWAY_TOKEN &&
+          railway up --service $RAILWAY_SERVICE_NAME --detach
+          "
