@@ -72,15 +72,14 @@ jobs:
       # -----------------------------------------------
       - name: Deploy no Railway
         env:
+          # Define o token do Railway como uma variável de ambiente
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           # Instalar Railway CLI
           npm install -g @railway/cli
 
-          # Fazer login no Railway
-          railway login --token $RAILWAY_TOKEN
-
-          # Deploy do projeto
+          # O comando 'railway up' irá usar a variável RAILWAY_TOKEN para autenticar
+          # e não requer mais o 'railway login --token'.
           railway up \
             --service ${{ env.RAILWAY_SERVICE_NAME }} \
             --detach
