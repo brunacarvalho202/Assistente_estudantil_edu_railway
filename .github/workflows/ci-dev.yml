@@ -8,7 +8,7 @@ on:
 # Permissões no nível do workflow (removido workflows: write)
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 jobs:
   test_and_sync:
