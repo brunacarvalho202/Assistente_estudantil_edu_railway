@@ -1,0 +1,49 @@
+# .dockerignore - Arquivos a ignorar no build Docker
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+tests/
+.pytest_cache
+.tox/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node (se houver)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Railway
+railroad.json
+.railway

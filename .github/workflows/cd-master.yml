@@ -1,0 +1,93 @@
+name: 3. CD - Deploy para Railway via Docker Hub
+
+# Este workflow é acionado somente quando o código é mesclado (merge) na branch 'master'
+on:
+  push:
+    branches:
+      - master
+
+# Define as variáveis do ambiente
+env:
+  DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_USERNAME }}/edu-assistant-ai
+  RAILWAY_SERVICE_NAME: edu-assistant-api
+
+jobs:
+  build_push_and_deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------
+      # 0. Rodar testes antes de fazer build
+      # -----------------------------------------------
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar Dependências
+        run: pip install -r requirements.txt
+
+      - name: Rodar Testes Unitários
+        run: pytest --tb=short -v
+
+      # -----------------------------------------------
+      # 1. Build e Push para Docker Hub
+      # -----------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extrair metadados da imagem
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKERHUB_REPOSITORY }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build e Push para Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # -----------------------------------------------
+      # 2. Deploy no Railway
+      # -----------------------------------------------
+      - name: Deploy no Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          # Instalar Railway CLI
+          npm install -g @railway/cli
+
+          # Fazer login no Railway
+          railway login --token $RAILWAY_TOKEN
+
+          # Deploy do projeto
+          railway up \
+            --service ${{ env.RAILWAY_SERVICE_NAME }} \
+            --detach
+
+      - name: Notificar Deploy Concluído
+        if: success()
+        run: |
+          echo "✅ Deploy concluído com sucesso!"
+          echo "Imagem Docker: ${{ env.DOCKERHUB_REPOSITORY }}:latest"
+          echo "Serviço Railway: ${{ env.RAILWAY_SERVICE_NAME }}"
